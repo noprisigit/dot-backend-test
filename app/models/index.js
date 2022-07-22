@@ -24,6 +24,7 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.users = require("./user.model")(sequelize, DataTypes);
+db.books = require("./book.model")(sequelize, DataTypes);
 
 db.sequelize
   .sync({ force: false })

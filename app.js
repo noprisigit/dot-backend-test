@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const logger = require("morgan");
 const bodyParser = require("body-parser");
+const redis = require("redis");
 const routes = require("./app/routes");
 require("dotenv").config();
 
@@ -24,6 +25,18 @@ app.get("/", (req, res) => {
   res.send("DOT Fulltime Backend Node JS Test API");
 });
 app.use(routes);
+
+const redisPort = process.env.REDIS_PORT || 6379;
+const client = redis.createClient(redisPort);
+
+client.on("error", (err) => {
+  console.log("Error", err);
+});
+
+client.on("connect", () => {
+  console.log(`Redis client connected on port ${redisPort}`);
+});
+
 
 const port = process.env.PORT || 3000;
 const url = process.env.URL;

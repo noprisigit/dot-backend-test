@@ -1,8 +1,15 @@
+const redis = require("redis");
+const client = redis.createClient();
+const redisMiddleware = require("../middlewares/redis");
 const db = require("../models");
 
 const Book = db.books;
 
+const redisKeys = ["books", "book"];
+
 const create = async (req, res) => {
+  redisMiddleware.removeRedisKey(redisKeys);
+
   try {
     const data = {
       title: req.body.title,
@@ -30,32 +37,74 @@ const create = async (req, res) => {
 };
 
 const findAll = async (req, res) => {
-  const books = await Book.findAll({});
+  client.get("books", async (err, data) => {
+    try {
+      if (data) {
+        return res.status(200).json({
+          status: "success",
+          message: "Books retrieved successfully",
+          data: JSON.parse(data),
+        });
+      } else {
+        const books = await Book.findAll({});
 
-  return res.status(200).json({
-    status: "success",
-    message: "Books retrieved successfully",
-    data: books,
+        client.set("books", JSON.stringify(books));
+
+        return res.status(200).json({
+          status: "success",
+          message: "Books retrieved successfully",
+          data: books,
+        });
+      }
+    } catch (err) {
+      return res.status(500).json({
+        status: "error",
+        message: "Something went wrong",
+        errors: err,
+      });
+    }
   });
 };
 
 const findOne = async (req, res) => {
-  const book = await Book.findByPk(req.params.id);
-  if (!book) {
-    return res.status(404).json({
-      status: "error",
-      message: "Book not found",
-    });
-  }
+  client.get("book", async (err, data) => {
+    try {
+      if (data) {
+        return res.status(200).json({
+          status: "success",
+          message: "Book retrieved successfully",
+          data: JSON.parse(data),
+        });
+      } else {
+        const book = await Book.findByPk(req.params.id);
+        if (!book) {
+          return res.status(404).json({
+            status: "error",
+            message: "Book not found",
+          });
+        }
 
-  return res.status(200).json({
-    status: "success",
-    message: "Book retrieved successfully",
-    data: book,
+        client.set("book", JSON.stringify(book));
+
+        return res.status(200).json({
+          status: "success",
+          message: "Book retrieved successfully",
+          data: book,
+        });
+      }
+    } catch (err) {
+      return res.status(500).json({
+        status: "error",
+        message: "Something went wrong",
+        errors: err,
+      });
+    }
   });
 };
 
 const update = async (req, res) => {
+  redisMiddleware.removeRedisKey(redisKeys);
+
   const book = await Book.findByPk(req.params.id);
   if (!book) {
     return res.status(404).json({
@@ -84,6 +133,8 @@ const update = async (req, res) => {
 };
 
 const destroy = async (req, res) => {
+  redisMiddleware.removeRedisKey(redisKeys);
+  
   const book = await Book.findByPk(req.params.id);
   if (!book) {
     return res.status(404).json({

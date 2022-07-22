@@ -2,8 +2,13 @@ const redis = require("redis");
 const client = redis.createClient();
 
 const removeRedisKey = (keys) => {
-  client.del(keys);
-  client.quit();
-}
+  if (keys.length > 0) {
+    client.del(keys, (err, reply) => {
+      if (err) {
+        console.log(err);
+      }
+    });
+  }
+};
 
-module.exports = removeRedisKey;
+module.exports = { removeRedisKey };

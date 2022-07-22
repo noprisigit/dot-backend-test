@@ -35,4 +35,7 @@ db.sequelize
     console.log("Error:", err);
   });
 
+db.users.hasMany(db.books, { foreignKey: "user_id", as: "books" });
+db.books.belongsTo(db.users, { foreignKey: "user_id", as: "user" });
+
 module.exports = db;

@@ -11,6 +11,8 @@ const create = async (req, res) => {
       publisher: req.body.publisher,
       released_date: req.body.released_date,
       price: req.body.price,
+      stock: req.body.stock,
+      user_id: req.body.userId,
     };
 
     const book = await Book.create(data);

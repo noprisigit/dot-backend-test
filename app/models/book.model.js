@@ -23,7 +23,16 @@ module.exports = (sequelize, DataTypes) => {
     price: {
       type: DataTypes.FLOAT,
       allowNull: false,
-    }
+    },
+    stock: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   });
 
   return Book;

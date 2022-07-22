@@ -25,6 +25,7 @@ db.sequelize = sequelize;
 
 db.users = require("./user.model")(sequelize, DataTypes);
 db.books = require("./book.model")(sequelize, DataTypes);
+db.transactions = require("./transaction.model")(sequelize, DataTypes);
 
 db.sequelize
   .sync({ force: false })
@@ -36,6 +37,16 @@ db.sequelize
   });
 
 db.users.hasMany(db.books, { foreignKey: "user_id", as: "books" });
+db.users.hasMany(db.transactions, {
+  foreignKey: "user_id",
+  as: "transactions",
+});
 db.books.belongsTo(db.users, { foreignKey: "user_id", as: "user" });
+db.books.hasMany(db.transactions, {
+  foreignKey: "book_id",
+  as: "transactions",
+});
+db.transactions.belongsTo(db.books, { foreignKey: "book_id", as: "book" });
+db.transactions.belongsTo(db.users, { foreignKey: "user_id", as: "user" });
 
 module.exports = db;

@@ -2,6 +2,7 @@ const redis = require("redis");
 const client = redis.createClient();
 const redisMiddleware = require("../middlewares/redis");
 const { validationResult } = require("express-validator/check");
+const logger = require("../loggers/logger");
 const db = require("../models");
 
 const Book = db.books;
@@ -39,6 +40,7 @@ const create = async (req, res) => {
       data: book,
     });
   } catch (err) {
+    logger.debug(err);
     return res.status(500).json({
       status: "error",
       message: "Something went wrong" + err,
@@ -67,6 +69,7 @@ const findAll = async (req, res) => {
         });
       }
     } catch (err) {
+      logger.debug(err);
       return res.status(500).json({
         status: "error",
         message: "Something went wrong",
@@ -103,6 +106,7 @@ const findOne = async (req, res) => {
         });
       }
     } catch (err) {
+      logger.debug(err);
       return res.status(500).json({
         status: "error",
         message: "Something went wrong",
@@ -135,6 +139,7 @@ const update = async (req, res) => {
       });
     })
     .catch((err) => {
+      logger.debug(err);
       return res.status(500).json({
         status: "error",
         message: "Something went wrong",

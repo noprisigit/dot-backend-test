@@ -4,7 +4,7 @@ const logger = require("morgan");
 const bodyParser = require("body-parser");
 const redis = require("redis");
 const routes = require("./app/routes");
-const db = require("./app/models");
+const httpLogger = require("./app/loggers/httpLogger");
 require("dotenv").config();
 
 const app = express();
@@ -21,6 +21,8 @@ app.use(cors(corsOptions));
 app.use(logger("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(httpLogger);
 
 app.get("/", (req, res) => {
   res.send("DOT Fulltime Backend Node JS Test API");

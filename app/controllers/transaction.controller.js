@@ -1,4 +1,5 @@
 const redis = require("redis");
+const logger = require("../loggers/logger");
 const client = redis.createClient();
 const redisMiddleware = require("../middlewares/redis");
 const { sequelize } = require("../models");
@@ -11,8 +12,8 @@ const Transaction = db.transactions;
 const redisKeys = [
   "transaction",
   "transaction",
-  "transactions.user",
-  "transactions.book",
+  "transactions.user:*",
+  "transactions.book:*",
 ];
 
 const create = async (req, res) => {
@@ -86,6 +87,7 @@ const create = async (req, res) => {
   } catch (err) {
     await t.rollback();
 
+    logger.debug(err);
     return res.status(500).json({
       status: "error",
       message: "Something went wrong",
@@ -126,6 +128,7 @@ const findAll = async (req, res) => {
         });
       }
     } catch (err) {
+      logger.debug(err);
       return res.status(500).json({
         status: "error",
         message: "Something went wrong",
@@ -177,6 +180,7 @@ const findOne = async (req, res) => {
         });
       }
     } catch (err) {
+      logger.debug(err);
       return res.status(500).json({
         status: "error",
         message: "Something went wrong",
@@ -187,7 +191,9 @@ const findOne = async (req, res) => {
 };
 
 const getTransactionsByUser = async (req, res) => {
-  client.get("transactions.user", async (err, data) => {
+  const userId = req.params.user_id;
+
+  client.get("transactions.user:" + userId, async (err, data) => {
     try {
       if (data) {
         return res.status(200).json({
@@ -196,8 +202,6 @@ const getTransactionsByUser = async (req, res) => {
           data: JSON.parse(data),
         });
       } else {
-        const userId = req.params.user_id;
-
         const transactions = await Transaction.findAll({
           where: {
             user_id: userId,
@@ -221,7 +225,7 @@ const getTransactionsByUser = async (req, res) => {
           });
         }
 
-        client.set("transactions.user", JSON.stringify(transactions));
+        client.set("transactions.user:" + userId, JSON.stringify(transactions));
 
         return res.status(200).json({
           status: "success",
@@ -230,6 +234,7 @@ const getTransactionsByUser = async (req, res) => {
         });
       }
     } catch (err) {
+      logger.debug(err);
       return res.status(500).json({
         status: "error",
         message: "Something went wrong",
@@ -240,7 +245,9 @@ const getTransactionsByUser = async (req, res) => {
 };
 
 const getTransactionsByBook = async (req, res) => {
-  client.get("transactions.book", async (err, data) => {
+  const bookId = req.params.book_id;
+
+  client.get("transactions.book:" + bookId, async (err, data) => {
     try {
       if (data) {
         return res.status(200).json({
@@ -249,8 +256,6 @@ const getTransactionsByBook = async (req, res) => {
           data: JSON.parse(data),
         });
       } else {
-        const bookId = req.params.book_id;
-
         const transactions = await Transaction.findAll({
           where: {
             book_id: bookId,
@@ -274,7 +279,7 @@ const getTransactionsByBook = async (req, res) => {
           });
         }
 
-        client.set("transactions.book", JSON.stringify(transactions));
+        client.set("transactions.book:" + bookId, JSON.stringify(transactions));
 
         return res.status(200).json({
           status: "success",
@@ -283,6 +288,7 @@ const getTransactionsByBook = async (req, res) => {
         });
       }
     } catch (err) {
+      logger.debug(err);
       return res.status(500).json({
         status: "error",
         message: "Something went wrong",

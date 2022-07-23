@@ -3,12 +3,14 @@ const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const { validationResult } = require("express-validator/check");
 const db = require("../models");
+const logger = require("../loggers/logger");
 
 const User = db.users;
 
 const register = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    logger.debug(errors.array());
     return res.status(400).json({
       status: "error",
       message: "Validation errors",

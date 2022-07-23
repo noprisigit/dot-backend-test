@@ -1,21 +1,33 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
+const { validationResult } = require("express-validator/check");
 const db = require("../models");
 
 const User = db.users;
 
 const register = async (req, res) => {
-  User.findOne({
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      status: "error",
+      message: "Validation errors",
+      errors: errors.array(),
+    });
+  }
+
+  let user = await User.findOne({
     where: { email: req.body.email },
   }).then((user) => {
-    if (user) {
-      return res.status(400).json({
-        status: "error",
-        message: "User already exists",
-      });
-    }
+    return user;
   });
+
+  if (user) {
+    return res.status(400).json({
+      status: "error",
+      message: "Email already exists",
+    });
+  }
 
   const data = {
     name: req.body.name,
@@ -23,7 +35,7 @@ const register = async (req, res) => {
     password: bcrypt.hashSync(req.body.password, saltRounds),
   };
 
-  const user = await User.create(data);
+  user = await User.create(data);
 
   return res.status(201).json({
     status: "success",

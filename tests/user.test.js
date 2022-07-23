@@ -1,12 +1,41 @@
 const chai = require("chai");
 const chaiHttp = require("chai-http");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 const app = require("../app");
+const db = require("../app/models");
 
 chai.use(chaiHttp);
 chai.should();
 
+const User = db.users;
+let defaultUser = {
+  name: "Default User",
+  email: "default@user.com",
+  password: "12345678",
+};
+
+let newUser = {
+  name: "New User",
+  email: "new@user.com",
+  password: "12345678",
+};
+
 describe("User", () => {
   describe("POST /api/v1/users/login", () => {
+    before((done) => {
+      User.create({
+        name: defaultUser.name,
+        email: defaultUser.email,
+        password: bcrypt.hashSync(defaultUser.password, saltRounds),
+      });
+      done();
+    });
+    after((done) => {
+      User.destroy({ where: { email: [defaultUser.email, newUser.email] } });
+      done();
+    });
+
     it("should return errors if validation fails", (done) => {
       chai
         .request(app)
@@ -25,33 +54,12 @@ describe("User", () => {
         });
     });
 
-    it("should return a token", (done) => {
-      chai
-        .request(app)
-        .post("/api/v1/login")
-        .send({
-          email: "noprisigit@gmail.com",
-          password: "12345678",
-        })
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a("object");
-          res.body.should.have.property("status").eql("success");
-          res.body.should.have
-            .property("message")
-            .eql("User logged in successfully");
-          res.body.should.have.property("data");
-          res.body.should.have.property("token");
-          done();
-        });
-    });
-
     it("should return an error if email is not provided", (done) => {
       chai
         .request(app)
         .post("/api/v1/login")
         .send({
-          email: "testingaccount@gmail.com",
+          email: "notfound@gmail.com",
           password: "12345678",
         })
         .end((err, res) => {
@@ -68,7 +76,7 @@ describe("User", () => {
         .request(app)
         .post("/api/v1/login")
         .send({
-          email: "noprisigit@gmail.com",
+          email: defaultUser.email,
           password: "1234567",
         })
         .end((err, res) => {
@@ -79,9 +87,44 @@ describe("User", () => {
           done();
         });
     });
+
+    it("should return a token", (done) => {
+      chai
+        .request(app)
+        .post("/api/v1/login")
+        .send({
+          email: defaultUser.email,
+          password: defaultUser.password,
+        })
+        .end((err, res) => {
+          console.log(err);
+          res.should.have.status(200);
+          res.body.should.be.a("object");
+          res.body.should.have.property("status").eql("success");
+          res.body.should.have
+            .property("message")
+            .eql("User logged in successfully");
+          res.body.should.have.property("data");
+          res.body.should.have.property("token");
+          done();
+        });
+    });
   });
 
   describe("POST /api/v1/users/register", () => {
+    before((done) => {
+      User.create({
+        name: defaultUser.name,
+        email: defaultUser.email,
+        password: bcrypt.hashSync(defaultUser.password, saltRounds),
+      });
+      done();
+    });
+    after((done) => {
+      User.destroy({ where: { email: [defaultUser.email, newUser.email] } });
+      done();
+    });
+    
     it("should return errors if validation fails", (done) => {
       chai
         .request(app)
@@ -106,9 +149,9 @@ describe("User", () => {
         .request(app)
         .post("/api/v1/register")
         .send({
-          name: "Sigit Prasetyo Noprianto",
-          email: "noprisigit@gmail.com",
-          password: "12345678",
+          name: defaultUser.name,
+          email: defaultUser.email,
+          password: defaultUser.password,
         })
         .end((err, res) => {
           res.should.have.status(400);
@@ -124,9 +167,9 @@ describe("User", () => {
         .request(app)
         .post("/api/v1/register")
         .send({
-          name: "Budi Kurniawan",
-          email: "budikurniawan@gmail.com",
-          password: "12345678",
+          name: newUser.name,
+          email: newUser.email,
+          password: newUser.password,
         })
         .end((err, res) => {
           res.should.have.status(201);

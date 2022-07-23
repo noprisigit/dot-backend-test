@@ -41,3 +41,5 @@ client.on("connect", () => {
 const port = process.env.PORT || 3000;
 const url = process.env.URL;
 app.listen(port, () => console.log(`Server started on ${url}:${port}`));
+
+module.exports = app;

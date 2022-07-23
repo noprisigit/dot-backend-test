@@ -45,6 +45,16 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      status: "error",
+      message: "Validation errors",
+      errors: errors.array(),
+    });
+  }
+  
   await User.findOne({
     where: { email: req.body.email },
   }).then((user) => {

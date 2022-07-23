@@ -90,12 +90,6 @@ project kali ini.
 Sebelum menggunakan book endpoint ini, pastikan anda telah login terlebih dahulu, kemudian masukkan `token` ke dalam `x-access-token` di header.
 Contohnya seperti ini`x-access-token = token`.
 
-```http
-  1. POST /api/v1/books/
-  2. GET /api/v1/books/
-  POST /api/v1/login
-```
-
 #### Create a new book
 ```http
   POST /api/v1/books

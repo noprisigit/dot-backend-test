@@ -4,6 +4,7 @@ const logger = require("morgan");
 const bodyParser = require("body-parser");
 const redis = require("redis");
 const routes = require("./app/routes");
+const db = require("./app/models");
 require("dotenv").config();
 
 const app = express();
@@ -24,6 +25,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.get("/", (req, res) => {
   res.send("DOT Fulltime Backend Node JS Test API");
 });
+
 app.use(routes);
 
 const redisPort = process.env.REDIS_PORT || 6379;

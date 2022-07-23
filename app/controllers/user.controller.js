@@ -54,7 +54,7 @@ const login = async (req, res) => {
       errors: errors.array(),
     });
   }
-  
+
   await User.findOne({
     where: { email: req.body.email },
   }).then((user) => {

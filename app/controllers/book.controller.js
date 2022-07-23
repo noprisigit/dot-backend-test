@@ -1,6 +1,7 @@
 const redis = require("redis");
 const client = redis.createClient();
 const redisMiddleware = require("../middlewares/redis");
+const { validationResult } = require("express-validator/check");
 const db = require("../models");
 
 const Book = db.books;
@@ -9,6 +10,15 @@ const redisKeys = ["books", "book"];
 
 const create = async (req, res) => {
   redisMiddleware.removeRedisKey(redisKeys);
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      status: "error",
+      message: "Validation errors",
+      errors: errors.array(),
+    });
+  }
 
   try {
     const data = {
@@ -134,7 +144,7 @@ const update = async (req, res) => {
 
 const destroy = async (req, res) => {
   redisMiddleware.removeRedisKey(redisKeys);
-  
+
   const book = await Book.findByPk(req.params.id);
   if (!book) {
     return res.status(404).json({
